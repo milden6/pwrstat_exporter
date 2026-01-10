@@ -18,12 +18,14 @@ const (
 var reTimestamp = regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}`)
 
 type Collector struct {
-	logger *slog.Logger
+	logger        *slog.Logger
+	pwrstatReader *pwrstat.Reader
 }
 
-func New(logger *slog.Logger) *Collector {
+func New(logger *slog.Logger, pr *pwrstat.Reader) *Collector {
 	return &Collector{
-		logger: logger,
+		logger:        logger,
+		pwrstatReader: pr,
 	}
 }
 
@@ -44,7 +46,7 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *Collector) Collect(ch chan<- prometheus.Metric) {
-	status, err := pwrstat.Status()
+	status, err := c.pwrstatReader.Status()
 	if err != nil {
 		c.logger.Error("failed to get UPS status", slog.Any("error", err))
 

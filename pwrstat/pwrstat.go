@@ -1,7 +1,8 @@
 package pwrstat
 
 import (
-	"os/exec"
+	"errors"
+	"os"
 	"strings"
 )
 
@@ -42,14 +43,24 @@ type UPSStatus struct {
 	LastPowerEvent   string
 }
 
-func IsExist() bool {
-	_, err := exec.LookPath("pwrstat")
-
-	return err == nil
+type Reader struct {
+	statusFilePath string
 }
 
-func Status() (*UPSStatus, error) {
-	rawStatus, err := exec.Command("pwrstat", "-status").Output()
+func NewReader(statusFilePath string) *Reader {
+	return &Reader{
+		statusFilePath: statusFilePath,
+	}
+}
+
+func (p *Reader) IsExist() bool {
+	_, err := os.Stat(p.statusFilePath)
+
+	return !errors.Is(err, os.ErrNotExist)
+}
+
+func (p *Reader) Status() (*UPSStatus, error) {
+	rawStatus, err := os.ReadFile(p.statusFilePath)
 	if err != nil {
 		return nil, err
 	}

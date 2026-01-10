@@ -1,5 +1,5 @@
 # Build the application from source
-FROM golang:1-alpine AS build-stage
+FROM golang:1.25.5-alpine AS build-stage
 
 WORKDIR /app
 
@@ -17,38 +17,17 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /pwrstat_exporter
 FROM build-stage AS run-test-stage
 RUN go test -v ./...
 
-# Deploy the application binary into a lean image
-FROM ubuntu:24.04 AS build-release-stage
-
-# Prepare system
-RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get install -y wget sed && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Install pwrstat
-RUN wget -O /tmp/PPL_64bit_v1.4.1.deb https://dl4jz3rbrsfum.cloudfront.net/software/PPL_64bit_v1.4.1.deb && \
-    dpkg -i /tmp/PPL_64bit_v1.4.1.deb && \
-    rm -rf /tmp/*
-
-# Configure pwrstat
-# ENV DELAY_BEFORE_SHUTDOWN_SEC="300" \
-#     SYSTEM_SHUTDOWN="on" \
-#     RUN_SCRIPT="off" \
-#     SCRIPT_RUN_DURATION_SEC="0" \
-#     POWERFAIL_SCRIPT_PATH="/etc/pwrstatd-powerfail.sh" \
-#     LOWBATT_SCRIPT_PATH="/etc/pwrstatd-lowbatt.sh" \
-#     LOWBATT_THRESHOLD="50" \
-#     BATTERY_RUNTIME_THRESHOLD_SEC="300" \
-#     SHUTDOWN_SUSTAIN_SEC="60"
-
-COPY pwrstat.sh /usr/local/bin/pwrstat.sh
-RUN chmod +x /usr/local/bin/pwrstat.sh && /usr/local/bin/pwrstat.sh
+FROM alpine:3.23.2 AS build-release-stage
 
 WORKDIR /
 
+# Deploy the application binary into a lean image
 COPY --from=build-stage /pwrstat_exporter /pwrstat_exporter
+
+RUN addgroup -g 1000 -S pwrstat_user && \
+    adduser -u 1000 -S pwrstat_user -G pwrstat_user
+
+USER pwrstat_user
 
 EXPOSE 9101
 

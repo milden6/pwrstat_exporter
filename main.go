@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	telemetryAddr = flag.String("telemetry.addr", ":9101", "Address for pwrstat exporter")
+	telemetryAddr     = flag.String("addr", ":9101", "Address for pwrstat exporter")
+	pwrstatStatusPath = flag.String("pwrstat-status-path", "/var/lib/pwrstat_status/status", "Path to pwrstat -status output")
 )
 
 func main() {
@@ -25,13 +26,14 @@ func main() {
 		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 	)
 
-	isPwrstatInstalled := pwrstat.IsExist()
+	pwrstatReader := pwrstat.NewReader(*pwrstatStatusPath)
+	isPwrstatInstalled := pwrstatReader.IsExist()
 	if !isPwrstatInstalled {
-		logger.Error("Please install pwrstat first")
+		logger.Error("Please check if the pwrstat -status output file exists", slog.String("path", *pwrstatStatusPath))
 		os.Exit(1)
 	}
 
-	collector := collector.New(logger)
+	collector := collector.New(logger, pwrstatReader)
 	prometheus.MustRegister(collector)
 
 	server := server.New(*telemetryAddr)
