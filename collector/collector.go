@@ -115,7 +115,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 		)
 	}
 
-	sources := []string{"utility power", "power failure"}
+	sources := []string{"utility power", "battery power"}
 	for _, src := range sources {
 		value := 0.0
 
