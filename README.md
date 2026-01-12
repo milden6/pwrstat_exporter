@@ -64,6 +64,8 @@ services:
     container_name: pwrstat-exporter
     restart: unless-stopped
     user: 1000:1000
+    environment:
+      - TZ=Europe/Amsterdam
     ports:
       - 9101:9101
     volumes:
