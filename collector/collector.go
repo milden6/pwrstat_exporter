@@ -150,7 +150,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	// )
 
 	eventTimeStr := reTimestamp.FindString(status.LastPowerEvent)
-	eventTime, err := time.Parse("2006/01/02 15:04:05", eventTimeStr)
+	eventTime, err := time.ParseInLocation("2006/01/02 15:04:05", eventTimeStr, time.Local)
 	if err != nil {
 		c.logger.Error("failed to parse time", slog.Any("error", err))
 
@@ -165,7 +165,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	)
 
 	testTimeStr := reTimestamp.FindString(status.TestResult)
-	testTime, err := time.Parse("2006/01/02 15:04:05", testTimeStr)
+	testTime, err := time.ParseInLocation("2006/01/02 15:04:05", testTimeStr, time.Local)
 	if err != nil {
 		c.logger.Error("failed to parse time", slog.Any("error", err))
 

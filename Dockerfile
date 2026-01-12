@@ -24,11 +24,15 @@ WORKDIR /
 # Deploy the application binary into a lean image
 COPY --from=build-stage /pwrstat_exporter /pwrstat_exporter
 
+RUN apk add --no-cache tzdata
+
 RUN addgroup -g 1000 -S pwrstat_user && \
     adduser -u 1000 -S pwrstat_user -G pwrstat_user
 
 USER pwrstat_user
 
 EXPOSE 9101
+
+ENV TZ=Etc/UTC
 
 ENTRYPOINT ["/pwrstat_exporter"]
