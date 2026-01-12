@@ -1,11 +1,11 @@
 # CyberPower UPS (pwrstat) Prometheus Exporter
 
-This is a simple server that read current status from CLI `pwrstat` and exports them via HTTP for Prometheus consumption.
+This is a simple server that read current UPS status from CLI daemon and exports them via HTTP for Prometheus consumption.
 
 # Installation
 
 > [!NOTE]
-> The pwrstat CLI and the pwrstatd daemon are responsible for monitoring and controlling the UPS and cannot be separated. Installing pwrstat in a Docker container is a bad decision, because it allows you to manage the UPS, while the exporter should only be responsible for receiving the UPS status. In any case, pwrstat must be installed on the host machine to manage the UPS. Therefore, only the file containing the output of pwrstat -status should be read.
+> The pwrstat CLI and the pwrstatd daemon are responsible for monitoring and controlling the UPS and cannot be separated. Installing pwrstat in a Docker container is a bad decision, because it allows you to manage the UPS, while the exporter should only be responsible for receiving the UPS status. Also pwrstat must be installed on the host machine to manage the UPS. Therefore, only the file containing the output of pwrstat -status should be read.
 
 ### Write UPS status
 
@@ -70,5 +70,5 @@ services:
       - /var/lib/pwrstat_status/status:/var/lib/pwrstat_status/status:ro
 ```
 
-### Grafana dashboard (example)
+# Grafana dashboard (example)
 ![](/static/grafana_dashboard.png)

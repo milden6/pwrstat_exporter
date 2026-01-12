@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/milden6/pwrstat_exporter/collector"
 	"github.com/milden6/pwrstat_exporter/pwrstat"
@@ -27,8 +28,8 @@ func main() {
 	)
 
 	pwrstatReader := pwrstat.NewReader(*pwrstatStatusPath)
-	isPwrstatInstalled := pwrstatReader.IsExist()
-	if !isPwrstatInstalled {
+	isFileExits := pwrstatReader.IsFileExist()
+	if !isFileExits {
 		logger.Error("Please check if the pwrstat -status output file exists", slog.String("path", *pwrstatStatusPath))
 		os.Exit(1)
 	}
@@ -49,5 +50,15 @@ func main() {
 	defer stop()
 
 	<-rootCtx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := server.Stop(shutdownCtx)
+	if err != nil {
+		logger.Error("Failed to wait for ongoing requests to finish, waiting for forced cancellation", slog.Any("error", err))
+
+		return
+	}
+
 	logger.Info("Server stopped gracefully")
 }

@@ -53,7 +53,7 @@ func NewReader(statusFilePath string) *Reader {
 	}
 }
 
-func (p *Reader) IsExist() bool {
+func (p *Reader) IsFileExist() bool {
 	_, err := os.Stat(p.statusFilePath)
 
 	return !errors.Is(err, os.ErrNotExist)
